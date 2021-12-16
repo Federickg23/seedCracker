@@ -30,14 +30,14 @@ matches chunk_val seed = do
     return val == 0 
 
 seed_transform :: Int -> Int -> Int
-seed_transform root chunk_val =  (((pstate xor 0x5e434e432) - chunk_val) .&. mask)
+seed_transform root chunk_val =  (((pstate `xor` 0x5e434e432) - chunk_val) .&. mask)
     where mask   = ((shiftL 1 48) - 1)
           source = (shiftL ((shiftR root 17) .&. 10) 17) .|. (root .&. ((shift 1 17) - 1));
           pstate = random_reverse(source)
 
 filter_even :: Int -> Int -> Int 
 filter_even chunk_val seed = do 
-    let random = ((seed + chunk_val) xor 0x5e434e432) .&. ((shiftL 1 48) - 1) 
+    let random = ((seed + chunk_val) `xor` 0x5e434e432) .&. ((shiftL 1 48) - 1) 
     let val = 0 
     let loop = do 
         random <- random_next(random) 
