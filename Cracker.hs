@@ -7,9 +7,9 @@ mask48Bit = shiftL 1 48 - 1
 calcChunkVal :: Int -> Int -> Int
 calcChunkVal x z = xsqv + xv + zsqv + zv 
     where xsqv = x * x * 0x4c1906
-          xv   = x * 0x5ac0db
+          xv = x * 0x5ac0db
           zsqv = z * z * 0x4307a7
-          zv   = z * 0x5f24f
+          zv = z * 0x5f24f
 
 randomNext :: Int -> Int
 randomNext seed = (seed * 0x5DEECE66D  * 0xB ) .&. mask48Bit
