@@ -23,8 +23,8 @@ matches :: Int64 -> Int64 -> Bool
 matches seed chunkVal = doShift random == 0 where
     random = fromIntegral ((seed + chunkVal) `xor` 0x5e434e432) .&. mask48Bit
 
-filterEven :: Int64 -> Int64 -> Bool 
-filterEven seed chunkVal = even $ doShift random where
+isEven :: Int64 -> Int64 -> Bool 
+isEven seed chunkVal = even $ doShift random where
     random = fromIntegral ((seed + chunkVal) `xor` 0x5e434e432) .&. mask48Bit
 
 doShift :: Word64 -> Word64
@@ -36,5 +36,5 @@ doShift random
           val = bits `mod` 10
 
 calcLowerBitSeries :: [Int64] -> [Int64]
-calcLowerBitSeries chunkVals = filter (\seed -> all (filterEven seed) chunkVals)
+calcLowerBitSeries chunkVals = filter (flip all chunkVals . isEven)
                                 [0..262143] :: [Int64]
