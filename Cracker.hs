@@ -17,7 +17,7 @@ randomNext :: Word64 -> Word64
 randomNext seed = (seed * 0x5deece66d + 0xb) .&. mask48Bit
 
 randomReverse :: Word64 -> Word64
-randomReverse seed = ((seed - 0xb ) * 246154705703781) .&. mask48Bit
+randomReverse seed = ((seed - 0xb) * 246154705703781) .&. mask48Bit
 
 matches :: Int64 -> Int64 -> Bool
 matches chunkVal seed = val == 0
