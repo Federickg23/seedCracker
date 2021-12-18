@@ -1,43 +1,40 @@
 module Cracker(calcChunkVal, randomNext, matches) where 
-import Control.Monad
-import Data.Bits
+import Data.Bits(Bits(shiftR, shiftL, xor, (.&.)))
+import Data.Int(Int64)
+import Data.Word(Word64)
 
-mask48Bit = shiftL 1 48 - 1
+mask48Bit :: Word64
+mask48Bit = 1 `shiftL` 48 - 1
 
-calcChunkVal :: Int -> Int -> Int
-calcChunkVal x z = xsqv + xv + zsqv + zv 
+calcChunkVal :: Int -> Int -> Int64
+calcChunkVal x z = fromIntegral $ xsqv + xv + zsqv + zv 
     where xsqv = x * x * 0x4c1906
           xv   = x * 0x5ac0db
           zsqv = z * z * 0x4307a7
           zv   = z * 0x5f24f
 
-randomNext :: Int -> Int
-randomNext seed = (seed * 0x5DEECE66D  * 0xB ) .&. mask48Bit
+randomNext :: Word64 -> Word64
+randomNext seed = (seed * 0x5deece66d + 0xb) .&. mask48Bit
 
-randomReverse :: Int -> Int
-randomReverse seed = ((seed - 0xB ) * 246154705703781 ) .&. mask48Bit
+randomReverse :: Word64 -> Word64
+randomReverse seed = ((seed - 0xB ) * 246154705703781) .&. mask48Bit
 
-matches :: Int -> Int -> Int
-matches chunk_val seed = do 
-    let random = ((seed + chunk_val) `xor`  0x5e434e432) .&. mask48Bit
-    let val = 0 
-    let loop = do 
-        let random = randomNext random
-        let bits = shiftR random 17
-        let val = bits `mod` 10
-        when (bits - val + 9 < 0) loop
-    loop
-    return val == 0 
+matches :: Int64 -> Int64 -> Bool
+matches chunkVal seed = val == 0
+    where random = ((seed + chunkVal) `xor` 0x5e434e432)
+                        .&. fromIntegral mask48Bit
+          val = doShift $ fromIntegral random
 
+filterEven :: Int64 -> Int64 -> Bool 
+filterEven chunkVal seed = even val
+    where random = ((seed + chunkVal) `xor` 0x5e434e432)
+                        .&. fromIntegral mask48Bit
+          val = doShift $ fromIntegral random
 
-filterEven :: Int -> Int -> Int 
-filterEven chunk_val seed = do 
-    let random = ((seed + chunk_val) `xor` 0x5e434e432) .&. mask48Bit
-    let val = 0 
-    let loop = do 
-        let random = randomNext random 
-        let bits =  shiftR random 17
-        let val = bits `mod` 10
-        when (bits - val +  9 < 0) loop
-    loop
-    return (val `mod` 2) == 0
+doShift :: Word64 -> Word64
+doShift random
+    | bits - val + 9 < 0 = doShift nextRandom
+    | otherwise = val
+    where nextRandom = randomNext random
+          bits = nextRandom `shiftR` 17
+          val = bits `mod` 10
