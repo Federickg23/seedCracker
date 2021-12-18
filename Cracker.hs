@@ -20,16 +20,12 @@ randomReverse :: Word64 -> Word64
 randomReverse seed = ((seed - 0xb) * 246154705703781) .&. mask48Bit
 
 matches :: Int64 -> Int64 -> Bool
-matches chunkVal seed = val == 0
-    where random = ((seed + chunkVal) `xor` 0x5e434e432)
-                        .&. fromIntegral mask48Bit
-          val = doShift $ fromIntegral random
+matches seed chunkVal = doShift random == 0 where
+    random = fromIntegral ((seed + chunkVal) `xor` 0x5e434e432) .&. mask48Bit
 
 filterEven :: Int64 -> Int64 -> Bool 
-filterEven chunkVal seed = even val
-    where random = ((seed + chunkVal) `xor` 0x5e434e432)
-                        .&. fromIntegral mask48Bit
-          val = doShift $ fromIntegral random
+filterEven seed chunkVal = even $ doShift random where
+    random = fromIntegral ((seed + chunkVal) `xor` 0x5e434e432) .&. mask48Bit
 
 doShift :: Word64 -> Word64
 doShift random
@@ -38,3 +34,7 @@ doShift random
     where nextRandom = randomNext random
           bits = nextRandom `shiftR` 17
           val = bits `mod` 10
+
+calcLowerBitSeries :: [Int64] -> [Int64]
+calcLowerBitSeries chunkVals = filter (\seed -> all (filterEven seed) chunkVals)
+                                [0..262143] :: [Int64]
