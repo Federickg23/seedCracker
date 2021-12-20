@@ -1,6 +1,11 @@
 module Main where
 
 import Cracker
+import Data.List(foldl')
+
+-- adapted from / inspired by https://stackoverflow.com/q/43033099
+concatMap' :: Foldable t => (a -> [b]) -> t a -> [b]
+concatMap' f = reverse . foldl' (flip ((++) . f)) []
 
 main :: IO ()
 main = do
@@ -9,7 +14,7 @@ main = do
     print chunkVals
     let lowerBits = calcLowerBitSeries chunkVals
     print lowerBits
-    let seeds = calcSlimeSeedsSeq chunkVals 127021
+    let seeds = concatMap' (calcSlimeSeedsSeq chunkVals) lowerBits
     print seeds
     let fullSeeds = concatMap expand48To64Random seeds
     print fullSeeds
