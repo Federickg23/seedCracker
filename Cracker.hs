@@ -6,6 +6,9 @@ import Data.Word(Word64)
 mask48Bit :: Word64
 mask48Bit = 1 `shiftL` 48 - 1
 
+blockSize :: Int64
+blockSize = 8388608
+ 
 calcChunkVal :: Int -> Int -> Int64
 calcChunkVal x z = fromIntegral $ xsqv + xv + zsqv + zv 
     where xsqv = x * x * 0x4c1906
@@ -38,3 +41,7 @@ doShift random
 calcLowerBitSeries :: [Int64] -> [Int64]
 calcLowerBitSeries chunkVals = filter (flip all chunkVals . checkEven)
                                 [0..262143] :: [Int64]
+
+processingThread :: Int64 -> Int64 -> [Int64] -> [Int64] 
+processingThread startSeed endSeed chunkVals =  filter (\seed -> all (matches seed) chunkVals) 
+                                [startSeed..endSeed] :: [Int64]
