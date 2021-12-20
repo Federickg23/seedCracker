@@ -1,5 +1,5 @@
 module Cracker(calcChunkVal, randomNext, matches) where 
-import Data.Bits(Bits(shiftR, shiftL, xor, (.&.)))
+import Data.Bits(Bits(shiftR, shiftL, xor, (.&.), (.|.)))
 import Data.Int(Int64)
 import Data.Word(Word64)
 
@@ -40,8 +40,8 @@ doShift random
 
 calcLowerBitSeries :: [Int64] -> [Int64]
 calcLowerBitSeries chunkVals = filter (flip all chunkVals . checkEven)
-                                [0..262143] :: [Int64]
+                                [0 .. 1 `shiftL` 18 - 1] :: [Int64]
 
-processingThread :: Int64 -> Int64 -> [Int64] -> [Int64] 
-processingThread startSeed endSeed chunkVals =  filter (\seed -> all (matches seed) chunkVals) 
-                                [startSeed..endSeed] :: [Int64]
+calcSlimeSeedsSeq :: Int64 -> [Int64] -> [Int64] 
+calcSlimeSeedsSeq lowerBits chunkVals = filter (flip all chunkVals . matches)
+    $ map ((.|. lowerBits) . (`shiftL` 18)) [0 .. 1 `shiftL` 30 - 1] :: [Int64]
