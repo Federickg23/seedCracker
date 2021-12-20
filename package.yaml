@@ -29,7 +29,7 @@ executables:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -O
+    - -O2
     - -Wall
     - -threaded
     - -rtsopts

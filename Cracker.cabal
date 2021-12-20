@@ -39,7 +39,7 @@ executable Cracker-exe
       Paths_Cracker
   hs-source-dirs:
       app
-  ghc-options: -O -Wall -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Cracker
     , base >=4.7 && <5
