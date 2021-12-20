@@ -47,12 +47,11 @@ calcSlimeSeedsSeq chunkVals lowerBits = filter (flip all chunkVals . matches)
 
 expand48To64Random :: Int64 -> [Int64]
 expand48To64Random seed = map ((.|. lowerInt) . (`shiftL` 32) . subtract offset)
-    $ filter isPossible [0 .. mask16Bit] where
-    mask16Bit = 1 `shiftL` 16 - 1
-    lowerInt = seed .&. (1 `shiftL` 32 - 1)
-    middle = lowerInt `shiftL` 16
-    offset = (seed .&. (1 `shiftL` 31)) `shiftR` 31
-    upperPartial = (seed `shiftR` 32 + offset) .&. mask16Bit
-    isPossible upperBits = (lastOutput .&. mask16Bit) == upperPartial where
-        lastOutput = fromIntegral
-            $ randomReverse (fromIntegral $ middle .|. upperBits) `shiftR` 16
+    $ filter ((upperPartial ==) . (.&. mask16Bit)) $ map
+    (fromIntegral . (`shiftR` 16) . randomReverse . fromIntegral . (middle .|.))
+    [0 .. mask16Bit]
+    where mask16Bit = 1 `shiftL` 16 - 1
+          lowerInt = seed .&. (1 `shiftL` 32 - 1)
+          middle = lowerInt `shiftL` 16
+          offset = (seed .&. (1 `shiftL` 31)) `shiftR` 31
+          upperPartial = (seed `shiftR` 32 + offset) .&. mask16Bit
