@@ -1,4 +1,4 @@
-module Cracker(calcChunkVal, randomNext, matches) where 
+module Cracker(calcChunkVal, calcLowerBitSeries, calcSlimeSeedsSeq) where 
 import Data.Bits(Bits(shiftR, shiftL, xor, (.&.), (.|.)))
 import Data.Int(Int64)
 import Data.Word(Word64)
