@@ -9,7 +9,7 @@ main :: IO ()
 main = do
     args <- getArgs
     unless (length args <= 3 && head args `elem` ["par", "seq"])
-        $ die "Usage: (par|seq) <num-blocks> [naive]"
+        $ die "Usage: (par|seq|parBuffer) <num-blocks> [naive]"
     let numBlocks = case args of
             [_, num] -> read num
             _ -> 128
@@ -24,9 +24,10 @@ main = do
     let seeds = case args of
             ["par", _, "naive"] ->
                 calcParListBlocksNaive numBlocks chunkVals lowerBits
-            ["par", _, "seq"] -> calcSeqNaive chunkVals lowerBits
-            ["par", _] -> calcParListBlocks numBlocks chunkVals lowerBits
-            ["seq", _] -> calcSeq chunkVals lowerBits
+            ["seq", _, "naive"] -> calcSeqNaive chunkVals lowerBits
+            "par" : _ -> calcParListBlocks numBlocks chunkVals lowerBits
+            "seq" : _ -> calcSeq chunkVals lowerBits
+            "parBuffer" : _ -> calcParBufferNaive chunkVals lowerBits
             _ -> [0]
     putStrLn "Calculated the following valid 40-bit seeds:"
     print seeds

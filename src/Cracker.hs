@@ -1,11 +1,11 @@
-module Cracker(calcChunkVal, calcLowerBitSeries, calcSlimeSeedsNaive,
-    calcSlimeSeeds, expand48To64Random, calcSeq, calcParListBlocks,
-    calcSeqNaive, calcParListBlocksNaive) where 
+module Cracker(calcChunkVal, calcLowerBitSeries, expand48To64Random, calcSeq,
+    calcParListBlocks, calcSeqNaive, calcParListBlocksNaive, calcParBufferNaive)
+    where 
 import Data.Bits(Bits(shiftR, shiftL, xor, (.&.), (.|.)))
 import Data.Int(Int32, Int64)
 import Data.Word(Word32, Word64)
 import Data.List(foldl')
-import Control.Parallel.Strategies(using, parList, rdeepseq)
+import Control.Parallel.Strategies(using, parList, rdeepseq, parBuffer)
 
 -- adapted from / inspired by https://stackoverflow.com/q/43033099
 concatMap' :: Foldable t => (a -> [b]) -> t a -> [b]
@@ -51,7 +51,13 @@ calcLowerBitSeries chunkVals = filter (flip all chunkVals . checkEven)
 calcSlimeSeedsNaive :: [Int64] -> [Int64] -> Int64 -> [Int64] 
 calcSlimeSeedsNaive chunkVals seeds lowerBits
     = filter (flip all chunkVals . matches)
-    $ map ((.|. lowerBits) . (`shiftL` 18)) seeds :: [Int64]
+    (map ((.|. lowerBits) . (`shiftL` 18)) seeds `using` parBuffer 100 rdeepseq)
+
+calcSlimeSeedsParBuffer :: [Int64] -> [Int64] -> Int64 -> [Int64] 
+calcSlimeSeedsParBuffer chunkVals seeds lowerBits
+    = filter (flip all chunkVals . matches)
+    (map ((.|. lowerBits) . (`shiftL` 18)) seeds `using` parBuffer 100 rdeepseq)
+    `using` parBuffer 100 rdeepseq
 
 calcSlimeSeeds :: [Int64] -> (Int64, Int64) -> Int64 -> [Int64] 
 calcSlimeSeeds chunkVals (seed, endSeed) lowerBits
@@ -76,6 +82,10 @@ calcSeqNaive :: [Int64] -> [Int64] -> [Int64]
 calcSeqNaive chunkVals
     = concatMap' (calcSlimeSeedsNaive chunkVals [0 .. 1 `shiftL` 30 - 1])
 
+calcParBufferNaive :: [Int64] -> [Int64] -> [Int64]
+calcParBufferNaive chunkVals
+    = concatMap' (calcSlimeSeedsParBuffer chunkVals [0 .. 1 `shiftL` 30 - 1])
+
 calcParListBlocksNaive :: Int64 -> [Int64] -> [Int64] -> [Int64]
 calcParListBlocksNaive numBlocks chunkVals lowerBits
     = concat (map (flip concatMap' lowerBits . calcSlimeSeedsNaive chunkVals)
@@ -90,7 +100,7 @@ calcSeq chunkVals
 
 calcParListBlocks :: Int64 -> [Int64] -> [Int64] -> [Int64]
 calcParListBlocks numBlocks chunkVals lowerBits
-    = concat (map (flip concatMap' lowerBits . calcSlimeSeeds chunkVals) blocks
+    = concat (map (flip concatMap lowerBits . calcSlimeSeeds chunkVals) blocks
         `using` parList rdeepseq)
     where
         step = 1 `shiftL` 30 `quot` numBlocks
