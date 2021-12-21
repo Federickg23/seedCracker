@@ -4,12 +4,14 @@ import Cracker
 import System.Environment(getArgs)
 import Control.Monad(unless)
 import System.Exit(die)
+import Data.List(intercalate)
 
 main :: IO ()
 main = do
+    let types = ["seq", "parList", "parBuffer", "parMonad"]
     args <- getArgs
-    unless (length args <= 3 && head args `elem` ["par", "seq"])
-        $ die "Usage: (par|seq|parBuffer) <num-blocks> [naive]"
+    unless (length args <= 3 && head args `elem` types) $
+        die $ "Usage: (" ++ (intercalate "|" types) ++ ") <num-blocks> [naive]"
     let numBlocks = case args of
             [_, num] -> read num
             _ -> 128
@@ -22,12 +24,13 @@ main = do
     putStrLn "Calculated the following valid lower 18 bits:"
     print lowerBits
     let seeds = case args of
-            ["par", _, "naive"] ->
+            ["parList", _, "naive"] ->
                 calcParListBlocksNaive numBlocks chunkVals lowerBits
             ["seq", _, "naive"] -> calcSeqNaive chunkVals lowerBits
-            "par" : _ -> calcParListBlocks numBlocks chunkVals lowerBits
+            "parList" : _ -> calcParListBlocks numBlocks chunkVals lowerBits
             "seq" : _ -> calcSeq chunkVals lowerBits
             "parBuffer" : _ -> calcParBufferNaive chunkVals lowerBits
+            "parMonad" : _ -> calcParMonadBlocks numBlocks chunkVals lowerBits
             _ -> [0]
     putStrLn "Calculated the following valid 40-bit seeds:"
     print seeds

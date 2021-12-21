@@ -1,11 +1,13 @@
 module Cracker(calcChunkVal, calcLowerBitSeries, expand48To64Random, calcSeq,
-    calcParListBlocks, calcSeqNaive, calcParListBlocksNaive, calcParBufferNaive)
-    where 
+    calcParListBlocks, calcSeqNaive, calcParListBlocksNaive, calcParBufferNaive,
+    calcParMonadBlocks) where 
 import Data.Bits(Bits(shiftR, shiftL, xor, (.&.), (.|.)))
 import Data.Int(Int32, Int64)
 import Data.Word(Word32, Word64)
 import Data.List(foldl')
 import Control.Parallel.Strategies(using, parList, rdeepseq, parBuffer)
+import Control.Monad.Par(runPar)
+import Control.Monad.Par.Combinator(parMap)
 
 -- adapted from / inspired by https://stackoverflow.com/q/43033099
 concatMap' :: Foldable t => (a -> [b]) -> t a -> [b]
@@ -51,7 +53,7 @@ calcLowerBitSeries chunkVals = filter (flip all chunkVals . checkEven)
 calcSlimeSeedsNaive :: [Int64] -> [Int64] -> Int64 -> [Int64] 
 calcSlimeSeedsNaive chunkVals seeds lowerBits
     = filter (flip all chunkVals . matches)
-    (map ((.|. lowerBits) . (`shiftL` 18)) seeds `using` parBuffer 100 rdeepseq)
+        $ map ((.|. lowerBits) . (`shiftL` 18)) seeds
 
 calcSlimeSeedsParBuffer :: [Int64] -> [Int64] -> Int64 -> [Int64] 
 calcSlimeSeedsParBuffer chunkVals seeds lowerBits
@@ -102,6 +104,13 @@ calcParListBlocks :: Int64 -> [Int64] -> [Int64] -> [Int64]
 calcParListBlocks numBlocks chunkVals lowerBits
     = concat (map (flip concatMap lowerBits . calcSlimeSeeds chunkVals) blocks
         `using` parList rdeepseq)
+    where
+        step = 1 `shiftL` 30 `quot` numBlocks
+        blocks = map (\i -> (i, i + step - 1)) [0, step .. 1 `shiftL` 30 - 1]
+
+calcParMonadBlocks :: Int64 -> [Int64] -> [Int64] -> [Int64]
+calcParMonadBlocks numBlocks chunkVals lowerBits = concat $ runPar
+    $ parMap (flip concatMap lowerBits . calcSlimeSeeds chunkVals) blocks
     where
         step = 1 `shiftL` 30 `quot` numBlocks
         blocks = map (\i -> (i, i + step - 1)) [0, step .. 1 `shiftL` 30 - 1]
