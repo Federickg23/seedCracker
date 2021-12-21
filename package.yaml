@@ -20,9 +20,13 @@ description:         Please see the README on GitHub at <https://github.com/Fede
 
 dependencies:
 - base >= 4.7 && < 5
+- parallel
 
 library:
   source-dirs: src
+  ghc-options:
+    - -O2
+    - -Wall
 
 executables:
   Cracker-exe:
@@ -32,10 +36,12 @@ executables:
     - -O2
     - -Wall
     - -threaded
+    - -eventlog
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
     - Cracker
+    - parallel
 
 tests:
   Cracker-test:

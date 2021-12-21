@@ -29,8 +29,10 @@ library
       Paths_Cracker
   hs-source-dirs:
       src
+  ghc-options: -O2 -Wall
   build-depends:
       base >=4.7 && <5
+    , parallel
   default-language: Haskell2010
 
 executable Cracker-exe
@@ -39,10 +41,11 @@ executable Cracker-exe
       Paths_Cracker
   hs-source-dirs:
       app
-  ghc-options: -O2 -Wall -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -Wall -threaded -eventlog -rtsopts -with-rtsopts=-N
   build-depends:
       Cracker
     , base >=4.7 && <5
+    , parallel
   default-language: Haskell2010
 
 test-suite Cracker-test
@@ -56,4 +59,5 @@ test-suite Cracker-test
   build-depends:
       Cracker
     , base >=4.7 && <5
+    , parallel
   default-language: Haskell2010
