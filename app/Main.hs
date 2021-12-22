@@ -20,7 +20,7 @@ main = do
     chunkCoords <- case args of
         filename : _ -> do
             text <- readFile filename
-            return $ map (((\[x, y] -> (x, y)) . map read) . words) (lines text)
+            return $ map (((\[x, z] -> (x, z)) . map read) . words) (lines text)
         _ -> return []
     let chunkVals = map calcChunkVal chunkCoords
     putStrLn "Calculated the following chunk values from the provided \
