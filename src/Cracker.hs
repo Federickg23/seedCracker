@@ -1,6 +1,6 @@
 module Cracker(calcChunkVal, calcLowerBitSeries, expand48To64Random, calcSeq,
     calcParListBlocks, calcSeqNaive, calcParListBlocksNaive, calcParBufferNaive,
-    calcParMonadBlocks) where 
+    calcParMonadBlocks, calcParMonadBlocksNaive) where 
 import Data.Bits(Bits(shiftR, shiftL, xor, (.&.), (.|.)))
 import Data.Int(Int32, Int64)
 import Data.Word(Word32, Word64)
@@ -92,6 +92,13 @@ calcParListBlocksNaive :: Int64 -> [Int64] -> [Int64] -> [Int64]
 calcParListBlocksNaive numBlocks chunkVals lowerBits
     = concat (map (flip concatMap' lowerBits . calcSlimeSeedsNaive chunkVals)
         blocks `using` parList rdeepseq)
+    where
+        step = 1 `shiftL` 30 `quot` numBlocks
+        blocks = map (\i -> [i .. i + step - 1]) [0, step .. 1 `shiftL` 30 - 1]
+
+calcParMonadBlocksNaive :: Int64 -> [Int64] -> [Int64] -> [Int64]
+calcParMonadBlocksNaive numBlocks chunkVals lowerBits = concat $ runPar
+    $ parMap (flip concatMap' lowerBits . calcSlimeSeedsNaive chunkVals) blocks
     where
         step = 1 `shiftL` 30 `quot` numBlocks
         blocks = map (\i -> [i .. i + step - 1]) [0, step .. 1 `shiftL` 30 - 1]

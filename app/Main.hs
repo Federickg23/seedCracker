@@ -33,6 +33,8 @@ main = do
             [_, "parList", _, "naive"] ->
                 calcParListBlocksNaive numBlocks chunkVals lowerBits
             [_, "seq", _, "naive"] -> calcSeqNaive chunkVals lowerBits
+            [_, "parMonad", _, "naive"] ->
+                calcParMonadBlocksNaive numBlocks chunkVals lowerBits
             _ : "parList" : _  ->
                 calcParListBlocks numBlocks chunkVals lowerBits
             _ : "seq" : _ -> calcSeq chunkVals lowerBits
