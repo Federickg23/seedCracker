@@ -18,7 +18,7 @@ main = do
             _ : _ : num : _ -> read num
             _ -> 128
     chunkCoords <- case args of
-        filename : _ : _ -> do
+        filename : _ -> do
             text <- readFile filename
             return $ map (((\[x, y] -> (x, y)) . map read) . words) (lines text)
         _ -> return []
