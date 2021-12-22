@@ -11,7 +11,7 @@ main :: IO ()
 main = do
     let types = ["seq", "parList", "parBuffer", "parMonad"]
     args <- getArgs
-    unless (inRange (1, 4) (length args) && args !! 1 `elem` types) $
+    unless (inRange (2, 4) (length args) && args !! 1 `elem` types) $
         die $ "Usage: <filename> (" ++ intercalate "|" types ++
             ") <num-blocks> [naive]"
     let numBlocks = case args of
